@@ -180,58 +180,36 @@ subroutine polyomino_simulation(n_mc_steps, n_savings, &
         integer :: i_omino, i_omino_type, i_cell, j_cell
         integer :: ix_cell, iy_cell, jx_cell, jy_cell
         integer :: other_omino_type
-
-        integer :: delta_x, delta_y
-
-
+        
         has_overlap = .false.
         
         i_omino_type = vec_omino_types(omino_id)
         
         do i_omino = 1, n_ominos
             if (i_omino == omino_id) cycle
-
-            delta_x = current_positions(i_omino,1) - new_x
-            if (delta_x > box_size/2) then
-                delta_x = delta_x - box_size
-            else if (delta_x < -box_size/2) then
-                delta_x = delta_x + box_size
-            end if
-
-            if (delta_x < 2*max_omino_size) then 
-                delta_y = current_positions(i_omino,2) - new_y
-                if (delta_y > box_size/2) then
-                    delta_y = delta_y - box_size
-                else if (delta_y < -box_size/2) then
-                    delta_y = delta_y + box_size
-                end if
-
-                if (delta_y < 2*max_omino_size) then 
+            
+            other_omino_type = vec_omino_types(i_omino)
+            
+            do i_cell = 1, ominos_sizes(i_omino_type)
+                ! Use rotated shape for the moved omino
+                ix_cell = modulo(new_x + & 
+                    & rot_omino_shapes(i_cell,1,i_omino_type,current_orientations(omino_id)) - 1, box_size) + 1
+                iy_cell = modulo(new_y + &
+                    & rot_omino_shapes(i_cell,2,i_omino_type,current_orientations(omino_id)) - 1, box_size) + 1
+                
+                do j_cell = 1, ominos_sizes(other_omino_type)
+                    ! Use rotated shape for the other omino
+                    jx_cell = modulo(current_positions(i_omino,1) + &
+                        & rot_omino_shapes(j_cell,1,other_omino_type,current_orientations(i_omino)) - 1, box_size) + 1
+                    jy_cell = modulo(current_positions(i_omino,2) + & 
+                        & rot_omino_shapes(j_cell,2,other_omino_type,current_orientations(i_omino)) - 1, box_size) + 1
                     
-                    other_omino_type = vec_omino_types(i_omino)
-                    
-                    do i_cell = 1, ominos_sizes(i_omino_type)
-                        ! Use rotated shape for the moved omino
-                        ix_cell = modulo(new_x + & 
-                            & rot_omino_shapes(i_cell,1,i_omino_type,current_orientations(omino_id)) - 1, box_size) + 1
-                        iy_cell = modulo(new_y + &
-                            & rot_omino_shapes(i_cell,2,i_omino_type,current_orientations(omino_id)) - 1, box_size) + 1
-                        
-                        do j_cell = 1, ominos_sizes(other_omino_type)
-                            ! Use rotated shape for the other omino
-                            jx_cell = modulo(current_positions(i_omino,1) + &
-                                & rot_omino_shapes(j_cell,1,other_omino_type,current_orientations(i_omino)) - 1, box_size) + 1
-                            jy_cell = modulo(current_positions(i_omino,2) + & 
-                                & rot_omino_shapes(j_cell,2,other_omino_type,current_orientations(i_omino)) - 1, box_size) + 1
-                            
-                            if (ix_cell == jx_cell .and. iy_cell == jy_cell) then
-                                has_overlap = .true.
-                                return
-                            end if
-                        end do
-                    end do
-                end if
-            end if
+                    if (ix_cell == jx_cell .and. iy_cell == jy_cell) then
+                        has_overlap = .true.
+                        return
+                    end if
+                end do
+            end do
         end do
     end subroutine check_overlap_after_translation
 
@@ -244,7 +222,6 @@ subroutine polyomino_simulation(n_mc_steps, n_savings, &
         integer :: i_omino, i_omino_type, i_cell, j_cell
         integer :: ix_cell, iy_cell, jx_cell, jy_cell
         integer :: other_omino_type
-        integer :: delta_x, delta_y
         
         has_overlap = .false.
         
@@ -254,42 +231,23 @@ subroutine polyomino_simulation(n_mc_steps, n_savings, &
             if (i_omino == omino_id) cycle
             
             other_omino_type = vec_omino_types(i_omino)
-
-            delta_x = current_positions(i_omino,1) - current_positions(omino_id,1)
-            if (delta_x > box_size/2) then
-                delta_x = delta_x - box_size
-            else if (delta_x < -box_size/2) then
-                delta_x = delta_x + box_size
-            end if
-
-            if (delta_x < 2*max_omino_size) then 
-                delta_y = current_positions(i_omino,2) - current_positions(omino_id,2)
-                if (delta_y > box_size/2) then
-                    delta_y = delta_y - box_size
-                else if (delta_y < -box_size/2) then
-                    delta_y = delta_y + box_size
-                end if
-
-                if (delta_y < 2*max_omino_size) then 
             
-                    do i_cell = 1, ominos_sizes(i_omino_type)
-                        ! Use the NEW rotation for the omino being rotated
-                        ix_cell = modulo(current_positions(omino_id,1) + rot_omino_shapes(i_cell,1,i_omino_type,new_rotation) - 1, box_size) + 1
-                        iy_cell = modulo(current_positions(omino_id,2) + rot_omino_shapes(i_cell,2,i_omino_type,new_rotation) - 1, box_size) + 1
-                        
-                        do j_cell = 1, ominos_sizes(other_omino_type)
-                            ! Use current rotation for other ominos
-                            jx_cell = modulo(current_positions(i_omino,1) + rot_omino_shapes(j_cell,1,other_omino_type,current_orientations(i_omino)) - 1, box_size) + 1
-                            jy_cell = modulo(current_positions(i_omino,2) + rot_omino_shapes(j_cell,2,other_omino_type,current_orientations(i_omino)) - 1, box_size) + 1
-                            
-                            if (ix_cell == jx_cell .and. iy_cell == jy_cell) then
-                                has_overlap = .true.
-                                return
-                            end if
-                        end do
-                    end do
-                end if
-            end if
+            do i_cell = 1, ominos_sizes(i_omino_type)
+                ! Use the NEW rotation for the omino being rotated
+                ix_cell = modulo(current_positions(omino_id,1) + rot_omino_shapes(i_cell,1,i_omino_type,new_rotation) - 1, box_size) + 1
+                iy_cell = modulo(current_positions(omino_id,2) + rot_omino_shapes(i_cell,2,i_omino_type,new_rotation) - 1, box_size) + 1
+                
+                do j_cell = 1, ominos_sizes(other_omino_type)
+                    ! Use current rotation for other ominos
+                    jx_cell = modulo(current_positions(i_omino,1) + rot_omino_shapes(j_cell,1,other_omino_type,current_orientations(i_omino)) - 1, box_size) + 1
+                    jy_cell = modulo(current_positions(i_omino,2) + rot_omino_shapes(j_cell,2,other_omino_type,current_orientations(i_omino)) - 1, box_size) + 1
+                    
+                    if (ix_cell == jx_cell .and. iy_cell == jy_cell) then
+                        has_overlap = .true.
+                        return
+                    end if
+                end do
+            end do
         end do
     end subroutine check_overlap_after_rotation
 
