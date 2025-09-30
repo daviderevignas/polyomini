@@ -4,7 +4,7 @@ subroutine polyomino_gcmc_simulation(n_mc_steps, n_savings, &
     & max_n_ominos, chemical_potentials, &
     & move_probabilities, box_size, prng_seed, &
     & system_snapshots, history_positions, history_orientations, history_n_ominos,&
-    & history_vec_omino_types)
+    & history_n_ominos_per_shape,history_vec_omino_types)
     implicit none
 
     ! Inputs
@@ -28,6 +28,7 @@ subroutine polyomino_gcmc_simulation(n_mc_steps, n_savings, &
     integer, intent(out) :: history_positions(max_n_ominos,2,n_savings)
     integer, intent(out) :: history_orientations(max_n_ominos,n_savings)
     integer, intent(out) :: history_n_ominos(n_savings)
+    integer, intent(out) :: history_n_ominos_per_shape(n_omino_types,n_savings)
     integer, intent(out) :: history_vec_omino_types(max_n_ominos,n_savings)
     
     ! Local variables
@@ -141,6 +142,7 @@ subroutine polyomino_gcmc_simulation(n_mc_steps, n_savings, &
             history_orientations(:,i_step/save_every+1) = -1
             history_orientations(1:current_n_ominos,i_step/save_every+1) = current_orientations(1:current_n_ominos)
             history_n_ominos(i_step/save_every+1) = current_n_ominos
+            history_n_ominos_per_shape(:,i_step/save_every+1)=current_n_ominos_per_type
             history_vec_omino_types(1:current_n_ominos,i_step/save_every+1)=vec_omino_types(1:current_n_ominos)
         end if
 
