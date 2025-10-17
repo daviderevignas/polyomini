@@ -57,6 +57,8 @@ subroutine polyomino_gcmc_simulation(n_mc_steps, n_savings, &
     double precision :: rand_real, cum_prob
     double precision :: acc_prob, rand_accept
 
+    integer :: debug_sum, debug_i1
+
     ! Initialize variables
     save_every = n_mc_steps/n_savings
 
@@ -78,6 +80,7 @@ subroutine polyomino_gcmc_simulation(n_mc_steps, n_savings, &
     current_n_ominos = initial_n_ominos
     current_n_ominos_per_type = initial_n_ominos_per_shape
     history_vec_omino_types = -1
+    vec_omino_types = -1
 
     ! Copy initial positions and orientations, set up vec_omino_types
     i_omino = 0
@@ -132,7 +135,7 @@ subroutine polyomino_gcmc_simulation(n_mc_steps, n_savings, &
                         & rot_omino_shapes(i_cell,1,i_omino_type,current_orientations(i_omino)) - 1, box_size) + 1
                     iy_cell = modulo(current_positions(i_omino,2) + &
                         & rot_omino_shapes(i_cell,2,i_omino_type,current_orientations(i_omino)) - 1, box_size) + 1
-                    current_system_state(ix_cell, iy_cell) = 1
+                    current_system_state(ix_cell, iy_cell) = i_omino_type
                 end do
             end do
 
@@ -145,6 +148,9 @@ subroutine polyomino_gcmc_simulation(n_mc_steps, n_savings, &
             history_n_ominos_per_shape(:,i_step/save_every+1)=current_n_ominos_per_type
             history_vec_omino_types(1:current_n_ominos,i_step/save_every+1)=vec_omino_types(1:current_n_ominos)
         end if
+
+
+
 
         ! Select move type
         call random_number(rand_real)
@@ -215,12 +221,30 @@ subroutine polyomino_gcmc_simulation(n_mc_steps, n_savings, &
                         current_positions(rand_omino,:) = current_positions(current_n_ominos,:)
                         current_orientations(rand_omino) = current_orientations(current_n_ominos)
                         vec_omino_types(rand_omino) = vec_omino_types(current_n_ominos)
+                        vec_omino_types(current_n_ominos) = -1
                         current_n_ominos = current_n_ominos - 1
                         current_n_ominos_per_type(rand_type) = current_n_ominos_per_type(rand_type) - 1
                     end if
                 end if
             end if
         end if
+
+        ! debug_sum=0
+        ! do debug_i1=1,max_n_ominos
+        !     if (vec_omino_types(debug_i1)>0) then
+        !         debug_sum=debug_sum+1
+        !     end if
+        ! end do
+        
+        ! if (.not. current_n_ominos == debug_sum) then
+        !     print *,"---",i_step,"---"
+        !     print*,vec_omino_types(1:10)
+        !     print *,current_n_ominos,debug_sum
+        !     exit
+        ! end if
+        ! print *, current_n_ominos, debug_sum
+
+
     end do
 
     ! Deallocate dynamic arrays
