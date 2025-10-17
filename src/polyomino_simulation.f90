@@ -116,7 +116,7 @@ subroutine polyomino_simulation(n_mc_steps, n_savings, &
                     current_system_state(&
                         & ix_cell, &
                         & iy_cell &
-                        & )=1
+                        & )=i_omino_type
                     
                 end do
             end do
