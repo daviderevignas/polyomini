@@ -1,6 +1,7 @@
 subroutine polyomino_simulation(n_mc_steps, n_savings, &
     & n_omino_types, ominos_sizes, max_omino_size, omino_shapes, &
-    & n_ominos_per_shape, n_ominos, initial_positions, initial_orientations, &
+    & n_ominos, initial_positions, initial_orientations, &
+    & vec_omino_types, &
     & box_size, &
     & prng_seed, &
     & system_snapshots, history_positions, history_orientations)
@@ -13,11 +14,11 @@ subroutine polyomino_simulation(n_mc_steps, n_savings, &
     integer, intent(in) :: ominos_sizes(n_omino_types)
     integer, intent(in) :: max_omino_size
     integer, intent(in) :: omino_shapes(max_omino_size,2,n_omino_types)
-    integer, intent(in) :: n_ominos_per_shape(n_omino_types)
 
     integer, intent(in) :: n_ominos
     integer, intent(in) :: initial_positions(n_ominos,2)
     integer, intent(in) :: initial_orientations(n_ominos)
+    integer, intent(in) :: vec_omino_types(n_ominos)
 
     integer, intent(in) :: box_size
 
@@ -37,8 +38,6 @@ subroutine polyomino_simulation(n_mc_steps, n_savings, &
 
     integer :: current_positions(n_ominos,2)
     integer :: current_orientations(n_ominos)
-
-    integer :: vec_omino_types(n_ominos)
 
     integer :: save_every
     logical :: has_overlap
@@ -62,13 +61,7 @@ subroutine polyomino_simulation(n_mc_steps, n_savings, &
     current_positions=initial_positions
     current_orientations=initial_orientations
 
-    i_omino = 0
-    do i_omino_type = 1, n_omino_types
-        do i_omino_of_type = 1,  n_ominos_per_shape(i_omino_type)
-            i_omino = i_omino + 1
-            vec_omino_types(i_omino)=i_omino_type
-        end do
-    end do
+    
 
     rot_omino_shapes = 0
     do i_omino_type = 1, n_omino_types
